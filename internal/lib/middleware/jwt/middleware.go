@@ -1,11 +1,13 @@
-package auth
+package jwt
 
 import (
 	"errors"
-	"github.com/go-chi/render"
-	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strings"
+
+	"github.com/go-chi/render"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/rshelekhov/avito-tech-internship/internal/domain"
 )
 
 func (m *manager) HTTPMiddleware(next http.Handler) http.Handler {
@@ -27,9 +29,27 @@ func (m *manager) HTTPMiddleware(next http.Handler) http.Handler {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, errors.New("unexpected signing method")
 			}
-			return []byte("secret"), nil
+			return []byte(m.secret), nil
 		})
-	}
+		if err != nil {
+			handleResponseError(w, http.StatusUnauthorized, err.Error())
+			return
+		}
+
+		if !token.Valid {
+			handleResponseError(w, http.StatusUnauthorized, "invalid token")
+			return
+		}
+
+		userID, ok := claims[domain.UserIDKey].(string)
+		if !ok {
+			handleResponseError(w, http.StatusUnauthorized, "invalid token claims")
+			return
+		}
+
+		ctx := m.toContext(r.Context(), userID)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
 }
 
 type ErrorResponse struct {
