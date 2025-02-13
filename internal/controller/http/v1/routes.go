@@ -36,6 +36,6 @@ func (ar *Router) initRoutes() *chi.Mux {
 			r.Get("buy/{item}", ar.coinsHandler.BuyMerch())
 		})
 	})
-	
+
 	return r
 }
