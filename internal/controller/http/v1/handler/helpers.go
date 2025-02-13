@@ -20,10 +20,3 @@ func handleBadRequestError(w http.ResponseWriter, r *http.Request, err error, lo
 	render.Status(r, http.StatusBadRequest)
 	render.JSON(w, r, ErrorResponse{Error: err.Error()})
 }
-
-func handleNotFoundError(w http.ResponseWriter, r *http.Request, err error, log *slog.Logger) {
-	log.Error(err.Error())
-
-	render.Status(r, http.StatusNotFound)
-	render.JSON(w, r, ErrorResponse{Error: err.Error()})
-}
