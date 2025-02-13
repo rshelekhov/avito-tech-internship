@@ -31,14 +31,14 @@ type (
 )
 
 // TODO: perhaps need to move it to env file
-const defaultBalance = 1000
+const DefaultBalance = 1000
 
 func NewUser(credentials UserCredentials, passwordHash string) User {
 	return User{
 		ID:           ksuid.New().String(),
 		Username:     credentials.Username,
 		PasswordHash: passwordHash,
-		Balance:      defaultBalance,
+		Balance:      DefaultBalance,
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
 	}
