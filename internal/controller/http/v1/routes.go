@@ -33,7 +33,9 @@ func (ar *Router) initRoutes() *chi.Mux {
 		r.Route("/api", func(r chi.Router) {
 			r.Get("/user", ar.coinsHandler.GetInfo())
 			r.Post("sendCoin", ar.coinsHandler.SendCoin())
-			r.Get("buy/{item}", ar.coinsHandler.BuyCoin())
+			r.Get("buy/{item}", ar.coinsHandler.BuyMerch())
 		})
 	})
+	
+	return r
 }
