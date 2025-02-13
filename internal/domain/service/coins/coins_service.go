@@ -12,7 +12,7 @@ type Service struct {
 }
 
 type Storage interface {
-	UpdateUserCoins(ctx context.Context, senderID string, amount int) error
+	UpdateUserCoins(ctx context.Context, senderID string, amount int32) error
 }
 
 func New(storage Storage) *Service {
@@ -28,7 +28,7 @@ func (s *Service) UpdateUserCoins(ctx context.Context, senderID string, amount i
 		return domain.ErrAmountMustBePositive
 	}
 
-	err := s.storage.UpdateUserCoins(ctx, senderID, amount)
+	err := s.storage.UpdateUserCoins(ctx, senderID, int32(amount))
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

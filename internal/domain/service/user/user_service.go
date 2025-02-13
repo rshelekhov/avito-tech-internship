@@ -18,7 +18,7 @@ type Storage interface {
 	CreateUser(ctx context.Context, user entity.User) error
 	GetUserByName(ctx context.Context, username string) (entity.User, error)
 	GetUserInfoByID(ctx context.Context, userID string) (entity.UserInfo, error)
-	GetUserInfoByUsername(ctx context.Context, toUsername string) (entity.UserInfo, error)
+	GetUserInfoByUsername(ctx context.Context, username string) (entity.UserInfo, error)
 }
 
 func New(storage Storage) *Service {
