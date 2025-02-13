@@ -3,14 +3,15 @@ package coins
 import (
 	"context"
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/rshelekhov/avito-tech-internship/internal/domain"
 	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
 	"github.com/rshelekhov/avito-tech-internship/internal/domain/usecase/coins/mocks"
 	"github.com/rshelekhov/avito-tech-internship/internal/lib/logger/handler/slogdiscard"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestUsecase_GetUserInfo(t *testing.T) {
