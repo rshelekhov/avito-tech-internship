@@ -27,7 +27,7 @@ type (
 
 	UserManager interface {
 		GetUserInfoByID(ctx context.Context, userID string) (entity.UserInfo, error)
-		GetUserInfoByUsername(ctx context.Context, toUsername string) (entity.UserInfo, error)
+		GetUserInfoByUsername(ctx context.Context, username string) (entity.UserInfo, error)
 	}
 
 	CoinManager interface {
@@ -77,7 +77,7 @@ func (u *Usecase) GetUserInfo(ctx context.Context) (entity.UserInfo, error) {
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			e.LogError(ctx, log, domain.ErrUserNotFound, err)
-			return entity.UserInfo{}, domain.ErrUserNotFound
+			return entity.UserInfo{}, domain.ErrBadRequest
 		}
 
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
@@ -108,7 +108,7 @@ func (u *Usecase) SendCoin(ctx context.Context, toUsername string, amount int) e
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			e.LogError(ctx, log, domain.ErrSenderNotFound, err)
-			return domain.ErrSenderNotFound
+			return domain.ErrBadRequest
 		}
 
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
@@ -125,7 +125,7 @@ func (u *Usecase) SendCoin(ctx context.Context, toUsername string, amount int) e
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			e.LogError(ctx, log, domain.ErrReceiverNotFound, err)
-			return domain.ErrReceiverNotFound
+			return domain.ErrBadRequest
 		}
 
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
@@ -172,7 +172,7 @@ func (u *Usecase) BuyMerch(ctx context.Context, itemName string) error {
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
 			e.LogError(ctx, log, domain.ErrUserNotFound, err)
-			return domain.ErrUserNotFound
+			return domain.ErrBadRequest
 		}
 
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
