@@ -44,22 +44,24 @@ func (h *CoinsHandler) GetInfo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handler.GetInfo"
 
+		log := h.log.With(slog.String("op", op))
+
 		ctx := r.Context()
 
 		userInfo, err := h.usecase.GetUserInfo(ctx)
+		if err != nil {
+			if errors.Is(err, domain.ErrBadRequest) {
+				err = fmt.Errorf("%s: failed to get user info: %w", op, err)
+				handleBadRequestError(w, r, err, log)
+				return
+			}
 
-		switch {
-		case errors.Is(err, domain.ErrUserNotFound):
 			err = fmt.Errorf("%s: failed to get user info: %w", op, err)
-			handleNotFoundError(w, r, err, h.log)
-			return
-		case err != nil:
-			err = fmt.Errorf("%s: failed to get user info: %w", op, err)
-
-			render.Status(r, http.StatusInternalServerError)
-			render.JSON(w, r, ErrorResponse{Error: err.Error()})
+			handleInternalError(w, r, err, log)
 			return
 		}
+
+		log.Info("user info retrieved", slog.String("userID", userInfo.ID))
 
 		render.Status(r, http.StatusOK)
 		render.JSON(w, r, InfoResponse{
@@ -84,10 +86,7 @@ func (h *CoinsHandler) SendCoin() http.HandlerFunc {
 		request := &SendCoinRequest{}
 		if err := render.Decode(r, request); err != nil {
 			err = fmt.Errorf("%s: failed to decode request: %w", op, err)
-			log.Error(err.Error())
-
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, ErrorResponse{Error: err.Error()})
+			handleBadRequestError(w, r, err, log)
 			return
 		}
 
@@ -99,23 +98,22 @@ func (h *CoinsHandler) SendCoin() http.HandlerFunc {
 		ctx := r.Context()
 
 		err := h.usecase.SendCoin(ctx, request.ToUser, request.Amount)
+		if err != nil {
+			if errors.Is(err, domain.ErrBadRequest) {
+				err = fmt.Errorf("%s: failed to send coin: %w", op, err)
+				handleBadRequestError(w, r, err, log)
+				return
+			}
 
-		switch {
-		case errors.Is(err, domain.ErrUserNotFound):
-			err = fmt.Errorf("%s: failed to send coin: %w", op, err)
-			handleNotFoundError(w, r, err, log)
-			return
-		case errors.Is(err, domain.ErrBadRequest):
-			err = fmt.Errorf("%s: failed to send coin: %w", op, err)
-			handleBadRequestError(w, r, err, log)
-			return
-		case err != nil:
 			err = fmt.Errorf("%s: failed to send coin: %w", op, err)
 			handleInternalError(w, r, err, log)
 			return
 		}
 
-		log.Info("coin sent", "toUser", request.ToUser, "amount", request.Amount)
+		log.Info("coin sent",
+			slog.String("toUser", request.ToUser),
+			slog.Int("amount", request.Amount),
+		)
 
 		render.Status(r, http.StatusOK)
 		render.JSON(w, r, nil)
@@ -138,23 +136,19 @@ func (h *CoinsHandler) BuyMerch() http.HandlerFunc {
 		ctx := r.Context()
 
 		err := h.usecase.BuyMerch(ctx, itemName)
+		if err != nil {
+			if errors.Is(err, domain.ErrBadRequest) {
+				err = fmt.Errorf("%s: failed to buy merch: %w", op, err)
+				handleBadRequestError(w, r, err, log)
+				return
+			}
 
-		switch {
-		case errors.Is(err, domain.ErrUserNotFound):
-			err = fmt.Errorf("%s: failed to buy merch: %w", op, err)
-			handleNotFoundError(w, r, err, log)
-			return
-		case errors.Is(err, domain.ErrBadRequest):
-			err = fmt.Errorf("%s: failed to buy merch: %w", op, err)
-			handleBadRequestError(w, r, err, log)
-			return
-		case err != nil:
 			err = fmt.Errorf("%s: failed to buy merch: %w", op, err)
 			handleInternalError(w, r, err, log)
 			return
 		}
 
-		log.Info("merch bought", "item", itemName)
+		log.Info("merch bought", slog.String("item", itemName))
 
 		render.Status(r, http.StatusOK)
 		render.JSON(w, r, nil)
