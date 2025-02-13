@@ -1,6 +1,11 @@
 package coins
 
-import "context"
+import (
+	"context"
+	"fmt"
+
+	"github.com/rshelekhov/avito-tech-internship/internal/domain"
+)
 
 type Service struct {
 	storage Storage
@@ -10,12 +15,23 @@ type Storage interface {
 	UpdateUserCoins(ctx context.Context, senderID string, amount int) error
 }
 
-func NewService(storage Storage) *Service {
+func New(storage Storage) *Service {
 	return &Service{
 		storage: storage,
 	}
 }
 
 func (s *Service) UpdateUserCoins(ctx context.Context, senderID string, amount int) error {
-	return s.storage.UpdateUserCoins(ctx, senderID, amount)
+	const op = "service.Coins.UpdateUserCoins"
+
+	if amount <= 0 {
+		return domain.ErrAmountMustBePositive
+	}
+
+	err := s.storage.UpdateUserCoins(ctx, senderID, amount)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
 }
