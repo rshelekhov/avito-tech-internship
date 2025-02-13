@@ -7,18 +7,22 @@ import (
 
 	"github.com/rshelekhov/avito-tech-internship/internal/domain"
 	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage"
 	"github.com/rshelekhov/avito-tech-internship/internal/lib/e"
 )
 
 type Usecase struct {
 	log         *slog.Logger
+	userMgr     UserManager
 	tokenMgr    TokenManager
 	passwordMgr PasswordManager
-	storage     Storage
 }
 
 type (
+	UserManager interface {
+		GetUserByName(ctx context.Context, username string) (entity.User, error)
+		CreateUser(ctx context.Context, user entity.User) error
+	}
+
 	TokenManager interface {
 		GenerateToken(userID string) (string, error)
 	}
@@ -27,24 +31,19 @@ type (
 		PasswordHash(password string) (string, error)
 		ValidatePassword(providedPassword, passwordHash string) error
 	}
-
-	Storage interface {
-		GetUserByName(ctx context.Context, username string) (entity.User, error)
-		CreateUser(ctx context.Context, user entity.User) error
-	}
 )
 
 func NewUsecase(
 	log *slog.Logger,
+	userMgr UserManager,
 	tokenMgr TokenManager,
 	passwordMgr PasswordManager,
-	storage Storage,
 ) *Usecase {
 	return &Usecase{
 		log:         log,
+		userMgr:     userMgr,
 		tokenMgr:    tokenMgr,
 		passwordMgr: passwordMgr,
-		storage:     storage,
 	}
 }
 
@@ -53,8 +52,8 @@ func (u *Usecase) Authenticate(ctx context.Context, credentials entity.UserCrede
 
 	log := u.log.With(slog.String("op", op))
 
-	existingUser, err := u.storage.GetUserByName(ctx, credentials.Username)
-	if errors.Is(err, storage.ErrUserNotFound) {
+	existingUser, err := u.userMgr.GetUserByName(ctx, credentials.Username)
+	if errors.Is(err, domain.ErrUserNotFound) {
 		// If user not found in storage, register new user and generate token
 		return u.registerNewUser(ctx, credentials)
 	}
@@ -80,7 +79,7 @@ func (u *Usecase) registerNewUser(ctx context.Context, credentials entity.UserCr
 
 	newUser := entity.NewUser(credentials, passwordHash)
 
-	if err = u.storage.CreateUser(ctx, newUser); err != nil {
+	if err = u.userMgr.CreateUser(ctx, newUser); err != nil {
 		e.LogError(ctx, log, domain.ErrFailedToCreateUser, err)
 		return "", domain.ErrFailedToCreateUser
 	}
