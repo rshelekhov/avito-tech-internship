@@ -23,7 +23,7 @@ type (
 	CoinsHandler interface {
 		GetInfo() http.HandlerFunc
 		SendCoin() http.HandlerFunc
-		BuyCoin() http.HandlerFunc
+		BuyMerch() http.HandlerFunc
 	}
 )
 
