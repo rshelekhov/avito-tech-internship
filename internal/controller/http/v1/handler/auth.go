@@ -30,12 +30,12 @@ func NewAuthHandler(log *slog.Logger, validate *validator.Validate, usecase Auth
 }
 
 type AuthRequest struct {
-	username string `json:"username" validate:"required"`
-	password string `json:"password" validate:"required"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type AuthResponse struct {
-	token string `json:"token"`
+	Token string `json:"token"`
 }
 
 func (h *AuthHandler) Auth() http.HandlerFunc {
@@ -47,10 +47,7 @@ func (h *AuthHandler) Auth() http.HandlerFunc {
 		request := &AuthRequest{}
 		if err := render.Decode(r, request); err != nil {
 			err = fmt.Errorf("failed to decode request: %w", err)
-			h.log.Error(err.Error())
-
-			render.Status(r, http.StatusBadRequest)
-			render.JSON(w, r, ErrorResponse{Error: err.Error()})
+			handleBadRequestError(w, r, err, log)
 			return
 		}
 
@@ -69,9 +66,9 @@ func (h *AuthHandler) Auth() http.HandlerFunc {
 			return
 		}
 
-		log.Info("user authenticated", slog.String("username", user.Username))
+		log.Info("user authenticated", slog.String("Username", user.Username))
 
 		render.Status(r, http.StatusOK)
-		render.JSON(w, r, AuthResponse{token: token})
+		render.JSON(w, r, AuthResponse{Token: token})
 	}
 }
