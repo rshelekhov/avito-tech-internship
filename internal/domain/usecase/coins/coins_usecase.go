@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+
 	"github.com/rshelekhov/avito-tech-internship/internal/domain"
 	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage"
 	"github.com/rshelekhov/avito-tech-internship/internal/lib/e"
-	"log/slog"
 )
 
 type Usecase struct {
@@ -17,6 +17,7 @@ type Usecase struct {
 	userMgr     UserManager
 	coinsMgr    CoinManager
 	merchMgr    MerchManager
+	txMgr       TransactionManager
 }
 
 type (
@@ -35,6 +36,11 @@ type (
 
 	MerchManager interface {
 		GetMerchByName(ctx context.Context, itemName string) (entity.Merch, error)
+		AddToInventory(ctx context.Context, userID, merchID string) error
+	}
+
+	TransactionManager interface {
+		WithinTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 	}
 )
 
@@ -44,6 +50,7 @@ func NewUsecase(
 	userSrv UserManager,
 	coinsSrv CoinManager,
 	merchSrv MerchManager,
+	txMgr TransactionManager,
 ) *Usecase {
 	return &Usecase{
 		log:         log,
@@ -51,6 +58,7 @@ func NewUsecase(
 		userMgr:     userSrv,
 		coinsMgr:    coinsSrv,
 		merchMgr:    merchSrv,
+		txMgr:       txMgr,
 	}
 }
 
@@ -67,6 +75,11 @@ func (u *Usecase) GetUserInfo(ctx context.Context) (entity.UserInfo, error) {
 
 	userInfo, err := u.userMgr.GetUserInfoByID(ctx, userID)
 	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			e.LogError(ctx, log, domain.ErrUserNotFound, err)
+			return entity.UserInfo{}, domain.ErrUserNotFound
+		}
+
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
 		return entity.UserInfo{}, domain.ErrFailedToGetUserInfo
 	}
@@ -93,49 +106,59 @@ func (u *Usecase) SendCoin(ctx context.Context, toUsername string, amount int) e
 
 	senderInfo, err := u.userMgr.GetUserInfoByID(ctx, senderID)
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
+		if errors.Is(err, domain.ErrUserNotFound) {
 			e.LogError(ctx, log, domain.ErrSenderNotFound, err)
 			return domain.ErrSenderNotFound
 		}
+
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
 		return domain.ErrFailedToGetUserInfo
 	}
 
 	if senderInfo.Coins < amount {
-		err := fmt.Errorf("%s: %w", op, domain.ErrInsufficientCoins)
+		err = fmt.Errorf("%s: %w", op, domain.ErrInsufficientCoins)
 		e.LogError(ctx, log, domain.ErrBadRequest, err)
 		return domain.ErrBadRequest
 	}
 
 	receiverUser, err := u.userMgr.GetUserInfoByUsername(ctx, toUsername)
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
+		if errors.Is(err, domain.ErrUserNotFound) {
 			e.LogError(ctx, log, domain.ErrReceiverNotFound, err)
 			return domain.ErrReceiverNotFound
 		}
+
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
 		return domain.ErrFailedToGetUserInfo
 	}
 
-	// TODO: add transaction here
+	if err = u.txMgr.WithinTransaction(ctx, func(txCtx context.Context) error {
+		// Update sender coins
+		if err = u.coinsMgr.UpdateUserCoins(txCtx, senderID, senderInfo.Coins-amount); err != nil {
+			e.LogError(txCtx, log, domain.ErrFailedToUpdateUserCoins, err)
+			return domain.ErrFailedToUpdateUserCoins
+		}
 
-	// Update sender coins
-	if err = u.coinsMgr.UpdateUserCoins(ctx, senderID, senderInfo.Coins-amount); err != nil {
-		e.LogError(ctx, log, domain.ErrFailedToUpdateUserCoins, err)
-		return domain.ErrFailedToUpdateUserCoins
-	}
+		// Update receiver coins
+		if err = u.coinsMgr.UpdateUserCoins(txCtx, receiverUser.ID, receiverUser.Coins+amount); err != nil {
+			e.LogError(txCtx, log, domain.ErrFailedToUpdateUserCoins, err)
+			return domain.ErrFailedToUpdateUserCoins
+		}
 
-	// Update receiver coins
-	if err = u.coinsMgr.UpdateUserCoins(ctx, receiverUser.ID, receiverUser.Coins+amount); err != nil {
-		e.LogError(ctx, log, domain.ErrFailedToUpdateUserCoins, err)
-		return domain.ErrFailedToUpdateUserCoins
+		return nil
+	}); err != nil {
+		e.LogError(ctx, log, domain.ErrFailedToCommitTransaction, err,
+			slog.Any("senderID", senderID),
+			slog.Any("receiverID", receiverUser.ID),
+		)
+		return err
 	}
 
 	return nil
 }
 
-func (u *Usecase) BuyCoin(ctx context.Context, itemName string) error {
-	const op = "usecase.Coins.BuyCoin"
+func (u *Usecase) BuyMerch(ctx context.Context, itemName string) error {
+	const op = "usecase.Coins.BuyMerch"
 
 	log := u.log.With(slog.String("op", op))
 
@@ -147,19 +170,44 @@ func (u *Usecase) BuyCoin(ctx context.Context, itemName string) error {
 
 	userInfo, err := u.userMgr.GetUserInfoByID(ctx, userID)
 	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			e.LogError(ctx, log, domain.ErrUserNotFound, err)
+			return domain.ErrUserNotFound
+		}
+
 		e.LogError(ctx, log, domain.ErrFailedToGetUserInfo, err)
 		return domain.ErrFailedToGetUserInfo
 	}
 
 	merch, err := u.merchMgr.GetMerchByName(ctx, itemName)
 	if err != nil {
-		if errors.Is(err, storage.ErrMerchNotFound) {
-			e.LogError(ctx, log, domain.ErrMerchNotFound, err)
-			return domain.ErrMerchNotFound
-		}
 		e.LogError(ctx, log, domain.ErrFailedToGetMerch, err)
 		return domain.ErrFailedToGetMerch
 	}
 
+	if userInfo.Coins < merch.Price {
+		err = fmt.Errorf("%s: %w", op, domain.ErrInsufficientCoins)
+		e.LogError(ctx, log, domain.ErrBadRequest, err)
+		return domain.ErrBadRequest
+	}
+
+	if err = u.txMgr.WithinTransaction(ctx, func(txCtx context.Context) error {
+		if err = u.coinsMgr.UpdateUserCoins(txCtx, userID, userInfo.Coins-merch.Price); err != nil {
+			e.LogError(txCtx, log, domain.ErrFailedToUpdateUserCoins, err)
+			return domain.ErrFailedToUpdateUserCoins
+		}
+
+		if err = u.merchMgr.AddToInventory(txCtx, userID, merch.ID); err != nil {
+			e.LogError(txCtx, log, domain.ErrFailedToAddMerchToInventory, err)
+			return domain.ErrFailedToAddMerchToInventory
+		}
+
+		return nil
+	}); err != nil {
+		e.LogError(ctx, log, domain.ErrFailedToCommitTransaction, err,
+			slog.Any("userID", userID),
+		)
+		return err
+	}
 	return nil
 }
