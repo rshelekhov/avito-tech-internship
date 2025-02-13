@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
+	"github.com/segmentio/ksuid"
 
 	"github.com/rshelekhov/avito-tech-internship/internal/domain"
 	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
@@ -22,7 +25,7 @@ func New(storage Storage) *Service {
 
 type Storage interface {
 	GetMerchByName(ctx context.Context, itemName string) (entity.Merch, error)
-	AddToInventory(ctx context.Context, userID, merchID string) error
+	AddToInventory(ctx context.Context, purchase entity.Purchase) error
 }
 
 func (s *Service) GetMerchByName(ctx context.Context, itemName string) (entity.Merch, error) {
@@ -42,7 +45,14 @@ func (s *Service) GetMerchByName(ctx context.Context, itemName string) (entity.M
 func (s *Service) AddToInventory(ctx context.Context, userID, merchID string) error {
 	const op = "service.merch.AddToInventory"
 
-	err := s.storage.AddToInventory(ctx, userID, merchID)
+	purchase := entity.Purchase{
+		ID:        ksuid.New().String(),
+		UserID:    userID,
+		MerchID:   merchID,
+		CreatedAt: time.Now(),
+	}
+
+	err := s.storage.AddToInventory(ctx, purchase)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
