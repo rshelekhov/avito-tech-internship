@@ -1,0 +1,47 @@
+version: "2"
+sql:
+  - name: user
+    schema: "migrations"
+    queries: "internal/infrastructure/storage/user/query"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "internal/infrastructure/storage/user/sqlc"
+        sql_package: "pgx/v5"
+        emit_db_tags: true
+        emit_interface: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "pg_catalog.timestamptz"
+            go_type: "time.Time"
+  - name: coins
+    schema: "migrations"
+    queries: "internal/infrastructure/storage/coins/query"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "internal/infrastructure/storage/coins/sqlc"
+        sql_package: "pgx/v5"
+        emit_db_tags: true
+        emit_interface: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "pg_catalog.timestamptz"
+            go_type: "time.Time"
+  - name: merch
+    schema: "migrations"
+    queries: "internal/infrastructure/storage/merch/query"
+    engine: "postgresql"
+    gen:
+      go:
+        package: "sqlc"
+        out: "internal/infrastructure/storage/merch/sqlc"
+        sql_package: "pgx/v5"
+        emit_db_tags: true
+        emit_interface: true
+        emit_empty_slices: true
+        overrides:
+          - db_type: "pg_catalog.timestamptz"
+            go_type: "time.Time"
