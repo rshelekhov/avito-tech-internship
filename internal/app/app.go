@@ -42,7 +42,7 @@ func New(cfg *config.ServerSettings, log *slog.Logger) (*App, error) {
 	// Init storages
 	coinsStorage := coinsDB.NewStorage(dbConn.Postgres.Pool, txMgr)
 	merchStorage := merchDB.NewStorage(dbConn.Postgres.Pool, txMgr)
-	userStorage := userDB.NewStorage(dbConn.Postgres.Pool, txMgr)
+	userStorage := userDB.NewStorage(dbConn.Postgres.Pool)
 
 	// Init managers
 	coinsMgr := coinsService.New(coinsStorage)
