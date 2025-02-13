@@ -14,13 +14,13 @@ func (m *manager) HTTPMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		tokenStr := r.Header.Get("Authorization")
 		if tokenStr == "" {
-			handleResponseError(w, http.StatusUnauthorized, "authorization header not found in http request")
+			handleResponseError(w, "authorization header not found in http request")
 			return
 		}
 		if len(tokenStr) > 7 && strings.ToUpper(tokenStr[0:6]) == "BEARER" {
 			tokenStr = tokenStr[7:]
 		} else {
-			handleResponseError(w, http.StatusUnauthorized, "invalid authorization header in http request")
+			handleResponseError(w, "invalid authorization header in http request")
 			return
 		}
 
@@ -32,18 +32,18 @@ func (m *manager) HTTPMiddleware(next http.Handler) http.Handler {
 			return []byte(m.secret), nil
 		})
 		if err != nil {
-			handleResponseError(w, http.StatusUnauthorized, err.Error())
+			handleResponseError(w, err.Error())
 			return
 		}
 
 		if !token.Valid {
-			handleResponseError(w, http.StatusUnauthorized, "invalid token")
+			handleResponseError(w, "invalid token")
 			return
 		}
 
 		userID, ok := claims[domain.UserIDKey].(string)
 		if !ok {
-			handleResponseError(w, http.StatusUnauthorized, "invalid token claims")
+			handleResponseError(w, "invalid token claims")
 			return
 		}
 
@@ -56,7 +56,7 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-func handleResponseError(w http.ResponseWriter, status int, message string) {
-	w.WriteHeader(status)
+func handleResponseError(w http.ResponseWriter, message string) {
+	w.WriteHeader(http.StatusUnauthorized)
 	render.JSON(w, nil, ErrorResponse{Error: message})
 }
