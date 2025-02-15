@@ -4,6 +4,10 @@ SERVER_PORT ?= 8080
 # Don't forget to set POSTGRESQL_URL with your credentials
 POSTGRESQL_URL ?= postgres://root:password@localhost:5432/merch_store_dev?sslmode=disable
 
+.PHONY: setup migrate migrate-down run-server stop-server build test-app lint
+
+setup: migrate
+
 # Run migrations only if not already applied
 migrate:
 	@echo "Checking if postgresql-client is installed..."
@@ -38,8 +42,41 @@ migrate-down:
 	@migrate -database $(POSTGRESQL_URL) -path migrations down
 	@echo "Migrations rolled back."
 
+# Run server
+run-server: stop-server
+	@echo "Running the server..."
+	@CONFIG_PATH=$(CONFIG_PATH) go run github.com/rshelekhov/avito-tech-internship/cmd/app &
+	@sleep 5 # Wait for the server to start
+	@while ! nc -z localhost $(SERVER_PORT); do \
+		echo "Waiting for server to be ready..."; \
+		sleep 1; \
+	done
+	@echo "Server is running with PID $$(lsof -t -i :$(SERVER_PORT))."
+
+# Stop server
+stop-server:
+	@echo "Stopping the server..."
+	@PID=$$(lsof -t -i :$(SERVER_PORT)); \
+    	if [ -n "$$PID" ]; then \
+    		kill $$PID; \
+    		echo "Server stopped."; \
+    	else \
+    		echo "No server is running on port $(SERVER_PORT)."; \
+    	fi
+
+build:
+	go build -v ./cmd/app
+
+# Run tests
+test-app: run-server
+	@echo "Running tests..."
+	@go test -v -timeout 60s -parallel=1 ./...
+	@echo "Tests completed."
+
 # Run linters
 lint:
 	@echo "Running linters..."
 	golangci-lint run --fix
 	@echo "Linters completed."
+
+.DEFAULT_GOAL := build
