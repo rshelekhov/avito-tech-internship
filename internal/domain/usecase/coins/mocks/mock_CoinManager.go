@@ -5,6 +5,7 @@ package mocks
 import (
 	context "context"
 
+	entity "github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -19,6 +20,53 @@ type CoinManager_Expecter struct {
 
 func (_m *CoinManager) EXPECT() *CoinManager_Expecter {
 	return &CoinManager_Expecter{mock: &_m.Mock}
+}
+
+// RegisterCoinTransfer provides a mock function with given fields: ctx, ct
+func (_m *CoinManager) RegisterCoinTransfer(ctx context.Context, ct entity.CoinTransfer) error {
+	ret := _m.Called(ctx, ct)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RegisterCoinTransfer")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, entity.CoinTransfer) error); ok {
+		r0 = rf(ctx, ct)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// CoinManager_RegisterCoinTransfer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterCoinTransfer'
+type CoinManager_RegisterCoinTransfer_Call struct {
+	*mock.Call
+}
+
+// RegisterCoinTransfer is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ct entity.CoinTransfer
+func (_e *CoinManager_Expecter) RegisterCoinTransfer(ctx interface{}, ct interface{}) *CoinManager_RegisterCoinTransfer_Call {
+	return &CoinManager_RegisterCoinTransfer_Call{Call: _e.mock.On("RegisterCoinTransfer", ctx, ct)}
+}
+
+func (_c *CoinManager_RegisterCoinTransfer_Call) Run(run func(ctx context.Context, ct entity.CoinTransfer)) *CoinManager_RegisterCoinTransfer_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(entity.CoinTransfer))
+	})
+	return _c
+}
+
+func (_c *CoinManager_RegisterCoinTransfer_Call) Return(_a0 error) *CoinManager_RegisterCoinTransfer_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *CoinManager_RegisterCoinTransfer_Call) RunAndReturn(run func(context.Context, entity.CoinTransfer) error) *CoinManager_RegisterCoinTransfer_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // UpdateUserCoins provides a mock function with given fields: ctx, senderID, amount

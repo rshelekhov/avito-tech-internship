@@ -101,10 +101,10 @@ func TestUsecase_GetUserInfo(t *testing.T) {
 					Return(entity.UserInfo{}, domain.ErrUserNotFound)
 			},
 			expectedInfo:  entity.UserInfo{},
-			expectedError: domain.ErrUserNotFound,
+			expectedError: domain.ErrBadRequest,
 		},
 		{
-			name: "Error - User not found",
+			name: "Error - Failed to get user info",
 			mockBehavior: func(
 				identityMgr *mocks.IdentityManager,
 				userMgr *mocks.UserManager,
@@ -258,6 +258,10 @@ func TestUsecase_SendCoin(t *testing.T) {
 				coinsMgr.EXPECT().UpdateUserCoins(ctx, receiver.ID, receiver.Coins+50).
 					Once().
 					Return(nil)
+
+				coinsMgr.EXPECT().RegisterCoinTransfer(ctx, mock.AnythingOfType("entity.CoinTransfer")).
+					Once().
+					Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -308,7 +312,7 @@ func TestUsecase_SendCoin(t *testing.T) {
 					Once().
 					Return(entity.UserInfo{}, domain.ErrUserNotFound)
 			},
-			expectedError: domain.ErrSenderNotFound,
+			expectedError: domain.ErrBadRequest,
 		},
 		{
 			name:       "Error — Failed to get sender info by ID",
@@ -372,7 +376,7 @@ func TestUsecase_SendCoin(t *testing.T) {
 					Once().
 					Return(entity.UserInfo{}, domain.ErrUserNotFound)
 			},
-			expectedError: domain.ErrReceiverNotFound,
+			expectedError: domain.ErrBadRequest,
 		},
 		{
 			name:       "Error — Failed to get receiver info by ID",
@@ -467,6 +471,47 @@ func TestUsecase_SendCoin(t *testing.T) {
 					Return(errors.New("coins manager error"))
 			},
 			expectedError: domain.ErrFailedToUpdateUserCoins,
+		},
+		{
+			name:       "Error — Failed to register coin transfer",
+			toUsername: receiverUsername,
+			amount:     50,
+			mockBehavior: func(
+				identityMgr *mocks.IdentityManager,
+				userMgr *mocks.UserManager,
+				coinsMgr *mocks.CoinManager,
+				txMgr *mocks.TransactionManager,
+			) {
+				identityMgr.EXPECT().ExtractUserIDFromContext(ctx).
+					Once().
+					Return(sender.ID, nil)
+
+				userMgr.EXPECT().GetUserInfoByID(ctx, sender.ID).
+					Once().
+					Return(sender, nil)
+
+				userMgr.EXPECT().GetUserInfoByUsername(ctx, receiverUsername).
+					Once().
+					Return(receiver, nil)
+
+				txMgr.EXPECT().WithinTransaction(ctx, mock.AnythingOfType("func(context.Context) error")).
+					RunAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					})
+
+				coinsMgr.EXPECT().UpdateUserCoins(ctx, sender.ID, sender.Coins-50).
+					Once().
+					Return(nil)
+
+				coinsMgr.EXPECT().UpdateUserCoins(ctx, receiver.ID, receiver.Coins+50).
+					Once().
+					Return(nil)
+
+				coinsMgr.EXPECT().RegisterCoinTransfer(ctx, mock.AnythingOfType("entity.CoinTransfer")).
+					Once().
+					Return(errors.New("coins manager error"))
+			},
+			expectedError: domain.ErrFailedToRegisterCoinTransfer,
 		},
 	}
 
@@ -578,6 +623,10 @@ func TestUsecase_BuyMerch(t *testing.T) {
 				merchMgr.EXPECT().AddToInventory(ctx, testUserInfo.ID, testMerch.ID).
 					Once().
 					Return(nil)
+
+				coinsMgr.EXPECT().RegisterCoinTransfer(ctx, mock.AnythingOfType("entity.CoinTransfer")).
+					Once().
+					Return(nil)
 			},
 			expectedError: nil,
 		},
@@ -615,7 +664,7 @@ func TestUsecase_BuyMerch(t *testing.T) {
 					Once().
 					Return(entity.UserInfo{}, domain.ErrUserNotFound)
 			},
-			expectedError: domain.ErrUserNotFound,
+			expectedError: domain.ErrBadRequest,
 		},
 		{
 			name:     "Error — Failed to get user info",
@@ -754,6 +803,47 @@ func TestUsecase_BuyMerch(t *testing.T) {
 					Return(domain.ErrFailedToAddMerchToInventory)
 			},
 			expectedError: domain.ErrFailedToAddMerchToInventory,
+		},
+		{
+			name:     "Error - Failed to register coin transfer",
+			itemName: testMerch.Name,
+			mockBehavior: func(
+				identityMgr *mocks.IdentityManager,
+				userMgr *mocks.UserManager,
+				coinsMgr *mocks.CoinManager,
+				merchMgr *mocks.MerchManager,
+				txMgr *mocks.TransactionManager,
+			) {
+				identityMgr.EXPECT().ExtractUserIDFromContext(ctx).
+					Once().
+					Return(testUserInfo.ID, nil)
+
+				userMgr.EXPECT().GetUserInfoByID(ctx, testUserInfo.ID).
+					Once().
+					Return(testUserInfo, nil)
+
+				merchMgr.EXPECT().GetMerchByName(ctx, testMerch.Name).
+					Once().
+					Return(testMerch, nil)
+
+				txMgr.EXPECT().WithinTransaction(ctx, mock.AnythingOfType("func(context.Context) error")).
+					RunAndReturn(func(ctx context.Context, fn func(context.Context) error) error {
+						return fn(ctx)
+					})
+
+				coinsMgr.EXPECT().UpdateUserCoins(ctx, testUserInfo.ID, testUserInfo.Coins-testMerch.Price).
+					Once().
+					Return(nil)
+
+				merchMgr.EXPECT().AddToInventory(ctx, testUserInfo.ID, testMerch.ID).
+					Once().
+					Return(nil)
+
+				coinsMgr.EXPECT().RegisterCoinTransfer(ctx, mock.AnythingOfType("entity.CoinTransfer")).
+					Once().
+					Return(errors.New("coins manager error"))
+			},
+			expectedError: domain.ErrFailedToRegisterCoinTransfer,
 		},
 	}
 

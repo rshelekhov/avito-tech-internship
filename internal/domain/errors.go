@@ -19,6 +19,7 @@ var (
 	ErrAmountMustBePositive             = errors.New("amount must be positive")
 	ErrInsufficientCoins                = errors.New("insufficient coins")
 	ErrFailedToUpdateUserCoins          = errors.New("failed to update user coins")
+	ErrFailedToRegisterCoinTransfer     = errors.New("failed to register coin transfer")
 	ErrReceiverNotFound                 = errors.New("receiver not found")
 	ErrSenderNotFound                   = errors.New("sender not found")
 	ErrMerchNotFound                    = errors.New("merch not found")

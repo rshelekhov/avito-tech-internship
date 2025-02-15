@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	RegisterCoinTransfer(ctx context.Context, arg RegisterCoinTransferParams) error
 	UpdateUserCoins(ctx context.Context, arg UpdateUserCoinsParams) error
 }
 

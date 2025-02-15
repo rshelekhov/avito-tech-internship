@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage/coins/sqlc"
@@ -39,6 +42,33 @@ func (s *Storage) UpdateUserCoins(ctx context.Context, senderID string, amount i
 		return s.queries.WithTx(tx).UpdateUserCoins(ctx, params)
 	}); err != nil {
 		return fmt.Errorf("%s: failed to update user coins: %w", op, err)
+	}
+
+	return nil
+}
+
+func (s *Storage) RegisterCoinTransfer(ctx context.Context, ct entity.CoinTransfer) error {
+	const op = "storage.coins.RegisterCoinTransfer"
+
+	params := sqlc.RegisterCoinTransferParams{
+		ID:              ct.ID,
+		SenderID:        ct.SenderID,
+		TransactionType: ct.TransactionType.String(),
+		Amount:          ct.Amount,
+		CreatedAt:       ct.Date,
+	}
+
+	if ct.TransactionType == entity.TransactionTypeTransferCoins {
+		params.ReceiverID = pgtype.Text{
+			String: ct.ReceiverID,
+			Valid:  true,
+		}
+	}
+
+	if err := s.txMgr.ExecWithinTx(ctx, func(tx pgx.Tx) error {
+		return s.queries.WithTx(tx).RegisterCoinTransfer(ctx, params)
+	}); err != nil {
+		return fmt.Errorf("%s: failed to register coin transfer: %w", op, err)
 	}
 
 	return nil

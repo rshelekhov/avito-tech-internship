@@ -7,7 +7,43 @@ package sqlc
 
 import (
 	"context"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const registerCoinTransfer = `-- name: RegisterCoinTransfer :exec
+INSERT INTO transactions (id, sender_id, receiver_id, transaction_type_id, amount, created_at)
+VALUES (
+           $1,
+           $2,
+           $3,
+           (SELECT id FROM transaction_types WHERE title = $4),
+           $5,
+           $6
+       )
+`
+
+type RegisterCoinTransferParams struct {
+	ID              string      `db:"id"`
+	SenderID        string      `db:"sender_id"`
+	ReceiverID      pgtype.Text `db:"receiver_id"`
+	TransactionType string      `db:"transaction_type"`
+	Amount          int32       `db:"amount"`
+	CreatedAt       time.Time   `db:"created_at"`
+}
+
+func (q *Queries) RegisterCoinTransfer(ctx context.Context, arg RegisterCoinTransferParams) error {
+	_, err := q.db.Exec(ctx, registerCoinTransfer,
+		arg.ID,
+		arg.SenderID,
+		arg.ReceiverID,
+		arg.TransactionType,
+		arg.Amount,
+		arg.CreatedAt,
+	)
+	return err
+}
 
 const updateUserCoins = `-- name: UpdateUserCoins :exec
 UPDATE users

@@ -5,6 +5,7 @@ package mocks
 import (
 	context "context"
 
+	entity "github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,8 +22,55 @@ func (_m *Storage) EXPECT() *Storage_Expecter {
 	return &Storage_Expecter{mock: &_m.Mock}
 }
 
+// RegisterCoinTransfer provides a mock function with given fields: ctx, ct
+func (_m *Storage) RegisterCoinTransfer(ctx context.Context, ct entity.CoinTransfer) error {
+	ret := _m.Called(ctx, ct)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RegisterCoinTransfer")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, entity.CoinTransfer) error); ok {
+		r0 = rf(ctx, ct)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Storage_RegisterCoinTransfer_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterCoinTransfer'
+type Storage_RegisterCoinTransfer_Call struct {
+	*mock.Call
+}
+
+// RegisterCoinTransfer is a helper method to define mock.On call
+//   - ctx context.Context
+//   - ct entity.CoinTransfer
+func (_e *Storage_Expecter) RegisterCoinTransfer(ctx interface{}, ct interface{}) *Storage_RegisterCoinTransfer_Call {
+	return &Storage_RegisterCoinTransfer_Call{Call: _e.mock.On("RegisterCoinTransfer", ctx, ct)}
+}
+
+func (_c *Storage_RegisterCoinTransfer_Call) Run(run func(ctx context.Context, ct entity.CoinTransfer)) *Storage_RegisterCoinTransfer_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(entity.CoinTransfer))
+	})
+	return _c
+}
+
+func (_c *Storage_RegisterCoinTransfer_Call) Return(_a0 error) *Storage_RegisterCoinTransfer_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *Storage_RegisterCoinTransfer_Call) RunAndReturn(run func(context.Context, entity.CoinTransfer) error) *Storage_RegisterCoinTransfer_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUserCoins provides a mock function with given fields: ctx, senderID, amount
-func (_m *Storage) UpdateUserCoins(ctx context.Context, senderID string, amount int) error {
+func (_m *Storage) UpdateUserCoins(ctx context.Context, senderID string, amount int32) error {
 	ret := _m.Called(ctx, senderID, amount)
 
 	if len(ret) == 0 {
@@ -30,7 +78,7 @@ func (_m *Storage) UpdateUserCoins(ctx context.Context, senderID string, amount 
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, int) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, int32) error); ok {
 		r0 = rf(ctx, senderID, amount)
 	} else {
 		r0 = ret.Error(0)
@@ -47,14 +95,14 @@ type Storage_UpdateUserCoins_Call struct {
 // UpdateUserCoins is a helper method to define mock.On call
 //   - ctx context.Context
 //   - senderID string
-//   - amount int
+//   - amount int32
 func (_e *Storage_Expecter) UpdateUserCoins(ctx interface{}, senderID interface{}, amount interface{}) *Storage_UpdateUserCoins_Call {
 	return &Storage_UpdateUserCoins_Call{Call: _e.mock.On("UpdateUserCoins", ctx, senderID, amount)}
 }
 
-func (_c *Storage_UpdateUserCoins_Call) Run(run func(ctx context.Context, senderID string, amount int)) *Storage_UpdateUserCoins_Call {
+func (_c *Storage_UpdateUserCoins_Call) Run(run func(ctx context.Context, senderID string, amount int32)) *Storage_UpdateUserCoins_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(int))
+		run(args[0].(context.Context), args[1].(string), args[2].(int32))
 	})
 	return _c
 }
@@ -64,7 +112,7 @@ func (_c *Storage_UpdateUserCoins_Call) Return(_a0 error) *Storage_UpdateUserCoi
 	return _c
 }
 
-func (_c *Storage_UpdateUserCoins_Call) RunAndReturn(run func(context.Context, string, int) error) *Storage_UpdateUserCoins_Call {
+func (_c *Storage_UpdateUserCoins_Call) RunAndReturn(run func(context.Context, string, int32) error) *Storage_UpdateUserCoins_Call {
 	_c.Call.Return(run)
 	return _c
 }

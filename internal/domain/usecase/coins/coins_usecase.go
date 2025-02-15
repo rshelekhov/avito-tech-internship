@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/rshelekhov/avito-tech-internship/internal/domain"
 	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
@@ -32,6 +33,7 @@ type (
 
 	CoinManager interface {
 		UpdateUserCoins(ctx context.Context, senderID string, amount int) error
+		RegisterCoinTransfer(ctx context.Context, ct entity.CoinTransfer) error
 	}
 
 	MerchManager interface {
@@ -145,6 +147,14 @@ func (u *Usecase) SendCoin(ctx context.Context, toUsername string, amount int) e
 			return domain.ErrFailedToUpdateUserCoins
 		}
 
+		// Register coin transfer
+		ct := entity.NewCoinTransfer(senderID, receiverUser.ID, entity.TransactionTypeTransferCoins, amount, time.Now())
+
+		if err = u.coinsMgr.RegisterCoinTransfer(txCtx, ct); err != nil {
+			e.LogError(txCtx, log, domain.ErrFailedToRegisterCoinTransfer, err)
+			return domain.ErrFailedToRegisterCoinTransfer
+		}
+
 		return nil
 	}); err != nil {
 		e.LogError(ctx, log, domain.ErrFailedToCommitTransaction, err,
@@ -200,6 +210,14 @@ func (u *Usecase) BuyMerch(ctx context.Context, itemName string) error {
 		if err = u.merchMgr.AddToInventory(txCtx, userID, merch.ID); err != nil {
 			e.LogError(txCtx, log, domain.ErrFailedToAddMerchToInventory, err)
 			return domain.ErrFailedToAddMerchToInventory
+		}
+
+		// Register coin transfer
+		ct := entity.NewCoinTransfer(userID, "", entity.TransactionTypePurchaseMerch, merch.Price, time.Now())
+
+		if err = u.coinsMgr.RegisterCoinTransfer(txCtx, ct); err != nil {
+			e.LogError(txCtx, log, domain.ErrFailedToRegisterCoinTransfer, err)
+			return domain.ErrFailedToRegisterCoinTransfer
 		}
 
 		return nil
