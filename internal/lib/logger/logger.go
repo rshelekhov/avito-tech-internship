@@ -4,6 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"os"
+
+	"github.com/rshelekhov/avito-tech-internship/internal/lib/logger/handler/slogpretty"
 )
 
 const (
@@ -47,10 +49,10 @@ func SetupLogger(env string) *slog.Logger {
 
 	switch env {
 	case envLocal:
-		handler = slog.Handler(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		handler = slogpretty.NewPrettyHandler(os.Stdout, &slogpretty.Options{
 			Level:     slog.LevelDebug,
 			AddSource: true,
-		}))
+		})
 	case envDev:
 		handler = slog.Handler(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 			Level:     slog.LevelDebug,
