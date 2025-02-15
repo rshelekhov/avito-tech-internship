@@ -23,7 +23,7 @@ func (ar *Router) initRoutes() *chi.Mux {
 
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	r.Get("/health", HealthCheck())
+	r.Head("/health", HealthCheck())
 
 	r.Post("/api/auth", ar.authHandler.Auth())
 
@@ -32,8 +32,8 @@ func (ar *Router) initRoutes() *chi.Mux {
 
 		r.Route("/api", func(r chi.Router) {
 			r.Get("/user", ar.coinsHandler.GetInfo())
-			r.Post("sendCoin", ar.coinsHandler.SendCoin())
-			r.Get("buy/{item}", ar.coinsHandler.BuyMerch())
+			r.Post("/sendCoin", ar.coinsHandler.SendCoin())
+			r.Get("/buy/{item}", ar.coinsHandler.BuyMerch())
 		})
 	})
 
