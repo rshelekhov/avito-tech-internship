@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - CONFIG_PATH=/src/config/.env
+      - POSTGRESQL_URL=postgres://root:password@postgres:5432/merch_store_dev?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./config:/src/config
+    command: >
+      sh -c "
+        if [ ! -f /src/config/.env ]; then
+          cp /src/config/.env.example /src/config/.env
+        fi
+        make migrate && ./app
+      "
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - CONFIG_PATH=/src/config/.env
+      - POSTGRESQL_URL=postgres://root:password@postgres:5432/merch_store_dev?sslmode=disable
+      - TEST_API_HOST=http://app:8080
+    depends_on:
+      app:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./config:/src/config
+    command: >
+      sh -c "
+        if [ ! -f /src/config/.env ]; then
+          cp /src/config/.env.example /src/config/.env
+        fi
+        echo 'Waiting for app to be ready...'
+        sleep 5
+        go test -v -timeout 60s -parallel=1 ./...
+      "
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=merch_store_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d merch_store_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
