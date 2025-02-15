@@ -1,0 +1,36 @@
+with-expecter: true
+issue-845-fix: true
+mockname: "{{.InterfaceName}}"
+outpkg: mocks
+packages:
+  github.com/rshelekhov/avito-tech-internship/internal/domain/service/coins:
+    config:
+      dir: internal/domain/service/coins/mocks
+    interfaces:
+      Storage:
+  github.com/rshelekhov/avito-tech-internship/internal/domain/service/merch:
+    config:
+      dir: internal/domain/service/merch/mocks
+    interfaces:
+      Storage:
+  github.com/rshelekhov/avito-tech-internship/internal/domain/service/user:
+    config:
+      dir: internal/domain/service/user/mocks
+    interfaces:
+      Storage:
+  github.com/rshelekhov/avito-tech-internship/internal/domain/usecase/auth:
+    config:
+      dir: internal/domain/usecase/auth/mocks
+    interfaces:
+      UserManager:
+      TokenManager:
+      PasswordManager:
+  github.com/rshelekhov/avito-tech-internship/internal/domain/usecase/coins:
+    config:
+      dir: internal/domain/usecase/coins/mocks
+    interfaces:
+      IdentityManager:
+      UserManager:
+      CoinManager:
+      MerchManager:
+      TransactionManager:
