@@ -116,7 +116,6 @@ func (h *CoinsHandler) SendCoin() http.HandlerFunc {
 		)
 
 		render.Status(r, http.StatusOK)
-		render.JSON(w, r, nil)
 	}
 }
 
@@ -151,6 +150,5 @@ func (h *CoinsHandler) BuyMerch() http.HandlerFunc {
 		log.Info("merch bought", slog.String("item", itemName))
 
 		render.Status(r, http.StatusOK)
-		render.JSON(w, r, nil)
 	}
 }
