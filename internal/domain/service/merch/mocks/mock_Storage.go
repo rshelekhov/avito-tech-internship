@@ -23,17 +23,17 @@ func (_m *Storage) EXPECT() *Storage_Expecter {
 	return &Storage_Expecter{mock: &_m.Mock}
 }
 
-// AddToInventory provides a mock function with given fields: ctx, userID, merchID
-func (_m *Storage) AddToInventory(ctx context.Context, userID string, merchID string) error {
-	ret := _m.Called(ctx, userID, merchID)
+// AddToInventory provides a mock function with given fields: ctx, purchase
+func (_m *Storage) AddToInventory(ctx context.Context, purchase entity.Purchase) error {
+	ret := _m.Called(ctx, purchase)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddToInventory")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, userID, merchID)
+	if rf, ok := ret.Get(0).(func(context.Context, entity.Purchase) error); ok {
+		r0 = rf(ctx, purchase)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -48,15 +48,14 @@ type Storage_AddToInventory_Call struct {
 
 // AddToInventory is a helper method to define mock.On call
 //   - ctx context.Context
-//   - userID string
-//   - merchID string
-func (_e *Storage_Expecter) AddToInventory(ctx interface{}, userID interface{}, merchID interface{}) *Storage_AddToInventory_Call {
-	return &Storage_AddToInventory_Call{Call: _e.mock.On("AddToInventory", ctx, userID, merchID)}
+//   - purchase entity.Purchase
+func (_e *Storage_Expecter) AddToInventory(ctx interface{}, purchase interface{}) *Storage_AddToInventory_Call {
+	return &Storage_AddToInventory_Call{Call: _e.mock.On("AddToInventory", ctx, purchase)}
 }
 
-func (_c *Storage_AddToInventory_Call) Run(run func(ctx context.Context, userID string, merchID string)) *Storage_AddToInventory_Call {
+func (_c *Storage_AddToInventory_Call) Run(run func(ctx context.Context, purchase entity.Purchase)) *Storage_AddToInventory_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		run(args[0].(context.Context), args[1].(entity.Purchase))
 	})
 	return _c
 }
@@ -66,7 +65,7 @@ func (_c *Storage_AddToInventory_Call) Return(_a0 error) *Storage_AddToInventory
 	return _c
 }
 
-func (_c *Storage_AddToInventory_Call) RunAndReturn(run func(context.Context, string, string) error) *Storage_AddToInventory_Call {
+func (_c *Storage_AddToInventory_Call) RunAndReturn(run func(context.Context, entity.Purchase) error) *Storage_AddToInventory_Call {
 	_c.Call.Return(run)
 	return _c
 }

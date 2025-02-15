@@ -183,9 +183,9 @@ func (_c *Storage_GetUserInfoByID_Call) RunAndReturn(run func(context.Context, s
 	return _c
 }
 
-// GetUserInfoByUsername provides a mock function with given fields: ctx, toUsername
-func (_m *Storage) GetUserInfoByUsername(ctx context.Context, toUsername string) (entity.UserInfo, error) {
-	ret := _m.Called(ctx, toUsername)
+// GetUserInfoByUsername provides a mock function with given fields: ctx, username
+func (_m *Storage) GetUserInfoByUsername(ctx context.Context, username string) (entity.UserInfo, error) {
+	ret := _m.Called(ctx, username)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserInfoByUsername")
@@ -194,16 +194,16 @@ func (_m *Storage) GetUserInfoByUsername(ctx context.Context, toUsername string)
 	var r0 entity.UserInfo
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) (entity.UserInfo, error)); ok {
-		return rf(ctx, toUsername)
+		return rf(ctx, username)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) entity.UserInfo); ok {
-		r0 = rf(ctx, toUsername)
+		r0 = rf(ctx, username)
 	} else {
 		r0 = ret.Get(0).(entity.UserInfo)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, toUsername)
+		r1 = rf(ctx, username)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -218,12 +218,12 @@ type Storage_GetUserInfoByUsername_Call struct {
 
 // GetUserInfoByUsername is a helper method to define mock.On call
 //   - ctx context.Context
-//   - toUsername string
-func (_e *Storage_Expecter) GetUserInfoByUsername(ctx interface{}, toUsername interface{}) *Storage_GetUserInfoByUsername_Call {
-	return &Storage_GetUserInfoByUsername_Call{Call: _e.mock.On("GetUserInfoByUsername", ctx, toUsername)}
+//   - username string
+func (_e *Storage_Expecter) GetUserInfoByUsername(ctx interface{}, username interface{}) *Storage_GetUserInfoByUsername_Call {
+	return &Storage_GetUserInfoByUsername_Call{Call: _e.mock.On("GetUserInfoByUsername", ctx, username)}
 }
 
-func (_c *Storage_GetUserInfoByUsername_Call) Run(run func(ctx context.Context, toUsername string)) *Storage_GetUserInfoByUsername_Call {
+func (_c *Storage_GetUserInfoByUsername_Call) Run(run func(ctx context.Context, username string)) *Storage_GetUserInfoByUsername_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})

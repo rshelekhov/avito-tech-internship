@@ -3,6 +3,7 @@ package merch
 import (
 	"context"
 	"errors"
+	"github.com/stretchr/testify/mock"
 	"testing"
 
 	"github.com/rshelekhov/avito-tech-internship/internal/domain"
@@ -93,7 +94,7 @@ func TestMerchService_AddToInventory(t *testing.T) {
 		{
 			name: "Success",
 			mockBehavior: func(coinsStorage *mocks.Storage) {
-				coinsStorage.EXPECT().AddToInventory(ctx, userID, merchID).
+				coinsStorage.EXPECT().AddToInventory(ctx, mock.AnythingOfType("entity.Purchase")).
 					Once().
 					Return(nil)
 			},
@@ -102,7 +103,7 @@ func TestMerchService_AddToInventory(t *testing.T) {
 		{
 			name: "Error – Storage error",
 			mockBehavior: func(coinsStorage *mocks.Storage) {
-				coinsStorage.EXPECT().AddToInventory(ctx, userID, merchID).
+				coinsStorage.EXPECT().AddToInventory(ctx, mock.AnythingOfType("entity.Purchase")).
 					Once().
 					Return(errors.New("storage error"))
 			},

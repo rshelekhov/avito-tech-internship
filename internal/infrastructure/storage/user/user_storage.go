@@ -88,12 +88,14 @@ func (s *Storage) GetUserInfoByID(ctx context.Context, userID string) (entity.Us
 		return entity.UserInfo{}, fmt.Errorf("%s: failed to unmarshal coin history: %w", op, err)
 	}
 
-	return entity.UserInfo{
+	userInfoTemp := entity.UserInfo{
 		ID:          userInfo.ID,
 		Coins:       int(userInfo.Coins),
 		Inventory:   inventory,
 		CoinHistory: coinHistory,
-	}, nil
+	}
+
+	return userInfoTemp, nil
 }
 
 func (s *Storage) GetUserInfoByUsername(ctx context.Context, username string) (entity.UserInfo, error) {
