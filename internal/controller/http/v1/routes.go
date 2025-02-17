@@ -4,7 +4,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	mwlogger "github.com/rshelekhov/avito-tech-internship/internal/lib/middleware/logger"
+	mwlogger "github.com/rshelekhov/merch-store/internal/lib/middleware/logger"
 )
 
 func (ar *Router) initRoutes() *chi.Mux {

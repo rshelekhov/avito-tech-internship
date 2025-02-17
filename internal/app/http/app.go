@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/rshelekhov/avito-tech-internship/internal/config/settings"
+	"github.com/rshelekhov/merch-store/internal/config/settings"
 )
 
 type App struct {

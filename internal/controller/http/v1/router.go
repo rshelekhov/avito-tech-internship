@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/rshelekhov/avito-tech-internship/internal/lib/middleware/jwt"
+	"github.com/rshelekhov/merch-store/internal/lib/middleware/jwt"
 )
 
 type Router struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	pgStorage "github.com/rshelekhov/avito-tech-internship/pkg/storage/postgres"
+	pgStorage "github.com/rshelekhov/merch-store/pkg/storage/postgres"
 )
 
 type DBConnection struct {

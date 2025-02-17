@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain"
 )
 
 type Service struct {

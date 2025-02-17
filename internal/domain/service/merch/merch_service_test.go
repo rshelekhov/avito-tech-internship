@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/mock"
 	"testing"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/service/merch/mocks"
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage"
+	"github.com/rshelekhov/merch-store/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/domain/service/merch/mocks"
+	"github.com/rshelekhov/merch-store/internal/infrastructure/storage"
 	"github.com/stretchr/testify/require"
 )
 

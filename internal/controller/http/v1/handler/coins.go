@@ -10,8 +10,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
 )
 
 type CoinsHandler struct {

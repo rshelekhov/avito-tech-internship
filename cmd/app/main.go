@@ -6,10 +6,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/app"
+	"github.com/rshelekhov/merch-store/internal/app"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/config"
-	"github.com/rshelekhov/avito-tech-internship/internal/lib/logger"
+	"github.com/rshelekhov/merch-store/internal/config"
+	"github.com/rshelekhov/merch-store/internal/lib/logger"
 )
 
 func main() {

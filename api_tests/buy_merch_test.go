@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/rshelekhov/avito-tech-internship/internal/controller/http/v1/handler"
+	"github.com/rshelekhov/merch-store/internal/controller/http/v1/handler"
 	"github.com/stretchr/testify/require"
 )
 

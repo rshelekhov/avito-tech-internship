@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/usecase/coins/mocks"
-	"github.com/rshelekhov/avito-tech-internship/internal/lib/logger/handler/slogdiscard"
+	"github.com/rshelekhov/merch-store/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/domain/usecase/coins/mocks"
+	"github.com/rshelekhov/merch-store/internal/lib/logger/handler/slogdiscard"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )

@@ -8,9 +8,9 @@ import (
 
 	"github.com/segmentio/ksuid"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage"
+	"github.com/rshelekhov/merch-store/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/infrastructure/storage"
 )
 
 type Service struct {

@@ -1,4 +1,4 @@
-module github.com/rshelekhov/avito-tech-internship
+module github.com/rshelekhov/merch-store
 
 go 1.23.0
 
@@ -6,6 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
+	github.com/fatih/color v1.15.0
 	github.com/gavv/httpexpect/v2 v2.16.0
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/render v1.0.3
@@ -24,7 +25,6 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/fatih/color v1.15.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
