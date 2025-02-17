@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
-	"github.com/rshelekhov/avito-tech-internship/internal/lib/e"
+	"github.com/rshelekhov/merch-store/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/lib/e"
 )
 
 type Usecase struct {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-chi/render"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain"
 )
 
 func (m *manager) HTTPMiddleware(next http.Handler) http.Handler {

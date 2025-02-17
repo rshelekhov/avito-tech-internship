@@ -8,9 +8,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage"
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage/user/sqlc"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/infrastructure/storage"
+	"github.com/rshelekhov/merch-store/internal/infrastructure/storage/user/sqlc"
 )
 
 type Storage struct {

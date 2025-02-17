@@ -1,6 +1,6 @@
 package handler
 
-import "github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
+import "github.com/rshelekhov/merch-store/internal/domain/entity"
 
 func toUserCredentials(request *AuthRequest) entity.UserCredentials {
 	return entity.UserCredentials{

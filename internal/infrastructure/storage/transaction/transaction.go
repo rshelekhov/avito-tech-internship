@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage"
+	"github.com/rshelekhov/merch-store/internal/infrastructure/storage"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

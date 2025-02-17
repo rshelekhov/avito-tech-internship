@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain"
 )
 
 func (s *Service) ExtractUserIDFromContext(ctx context.Context) (string, error) {

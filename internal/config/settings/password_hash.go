@@ -1,6 +1,6 @@
 package settings
 
-import "github.com/rshelekhov/avito-tech-internship/internal/domain/service/token"
+import "github.com/rshelekhov/merch-store/internal/domain/service/token"
 
 type PasswordHash struct {
 	Pepper     string `mapstructure:"PASSWORD_HASH_PEPPER"`

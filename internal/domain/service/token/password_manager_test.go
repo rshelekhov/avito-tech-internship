@@ -3,7 +3,7 @@ package token
 import (
 	"testing"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain"
 	"github.com/stretchr/testify/require"
 )
 

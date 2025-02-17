@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage/coins/sqlc"
+	"github.com/rshelekhov/merch-store/internal/infrastructure/storage/coins/sqlc"
 )
 
 type Storage struct {

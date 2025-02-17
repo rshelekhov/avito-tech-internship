@@ -3,7 +3,7 @@ package settings
 import (
 	"time"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/service/token"
+	"github.com/rshelekhov/merch-store/internal/domain/service/token"
 )
 
 type JWT struct {

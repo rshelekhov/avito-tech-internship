@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain"
 )
 
 type manager struct {

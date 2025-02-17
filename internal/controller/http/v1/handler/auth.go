@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
 )
 
 type AuthHandler struct {

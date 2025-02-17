@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/rshelekhov/avito-tech-internship/internal/config"
+	"github.com/rshelekhov/merch-store/internal/config"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

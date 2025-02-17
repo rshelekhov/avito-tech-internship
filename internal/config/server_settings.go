@@ -1,6 +1,6 @@
 package config
 
-import "github.com/rshelekhov/avito-tech-internship/internal/config/settings"
+import "github.com/rshelekhov/merch-store/internal/config/settings"
 
 type ServerSettings struct {
 	AppEnv       string                `mapstructure:"APP_ENV"`

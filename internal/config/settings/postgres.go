@@ -3,8 +3,8 @@ package settings
 import (
 	"time"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/infrastructure/storage"
-	"github.com/rshelekhov/avito-tech-internship/pkg/storage/postgres"
+	"github.com/rshelekhov/merch-store/internal/infrastructure/storage"
+	"github.com/rshelekhov/merch-store/pkg/storage/postgres"
 )
 
 type Postgres struct {

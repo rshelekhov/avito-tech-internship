@@ -3,13 +3,13 @@ package coins
 import (
 	"context"
 	"errors"
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/entity"
+	"github.com/rshelekhov/merch-store/internal/domain/entity"
 	"testing"
 	"time"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain"
+	"github.com/rshelekhov/merch-store/internal/domain"
 
-	"github.com/rshelekhov/avito-tech-internship/internal/domain/service/coins/mocks"
+	"github.com/rshelekhov/merch-store/internal/domain/service/coins/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
