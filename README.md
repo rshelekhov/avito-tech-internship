@@ -43,8 +43,8 @@ The project follows a clean architecture approach with the following key compone
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/rshelekhov/avito-tech-internship.git
-cd avito-tech-internship
+git clone https://github.com/rshelekhov/merch-store.git
+cd merch-store
 ```
 
 2. Start the application:
