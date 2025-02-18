@@ -6,13 +6,20 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) error
-	GetUserByName(ctx context.Context, username string) (GetUserByNameRow, error)
-	GetUserInfoByID(ctx context.Context, id string) (GetUserInfoByIDRow, error)
-	GetUserInfoByUsername(ctx context.Context, username string) (GetUserInfoByUsernameRow, error)
+	GetReceivedTransactions(ctx context.Context, receiverID pgtype.Text) ([]GetReceivedTransactionsRow, error)
+	// only coin transfers
+	GetSentTransactions(ctx context.Context, senderID string) ([]GetSentTransactionsRow, error)
+	GetUserBalanceByID(ctx context.Context, id string) (GetUserBalanceByIDRow, error)
+	GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error)
+	// only coin transfers
+	GetUserIDByUsername(ctx context.Context, username string) (string, error)
+	GetUserInventory(ctx context.Context, userID string) ([]GetUserInventoryRow, error)
 }
 
 var _ Querier = (*Queries)(nil)
