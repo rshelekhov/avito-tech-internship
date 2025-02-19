@@ -8,6 +8,8 @@ package sqlc
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :exec
@@ -36,7 +38,116 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	return err
 }
 
-const getUserByName = `-- name: GetUserByName :one
+const getReceivedTransactions = `-- name: GetReceivedTransactions :many
+SELECT
+    sender.username as from_user,
+    t.receiver_id as to_user,
+    t.amount,
+    t.created_at as date
+FROM transactions t
+    JOIN users sender ON t.sender_id = sender.id AND sender.deleted_at IS NULL
+WHERE t.receiver_id = $1
+    AND t.transaction_type_id = 0
+`
+
+type GetReceivedTransactionsRow struct {
+	FromUser string      `db:"from_user"`
+	ToUser   pgtype.Text `db:"to_user"`
+	Amount   int32       `db:"amount"`
+	Date     time.Time   `db:"date"`
+}
+
+func (q *Queries) GetReceivedTransactions(ctx context.Context, receiverID pgtype.Text) ([]GetReceivedTransactionsRow, error) {
+	rows, err := q.db.Query(ctx, getReceivedTransactions, receiverID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetReceivedTransactionsRow{}
+	for rows.Next() {
+		var i GetReceivedTransactionsRow
+		if err := rows.Scan(
+			&i.FromUser,
+			&i.ToUser,
+			&i.Amount,
+			&i.Date,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSentTransactions = `-- name: GetSentTransactions :many
+
+SELECT
+    t.sender_id as from_user,
+    receiver.username as to_user,
+    t.amount,
+    t.created_at as date
+FROM transactions t
+    JOIN users receiver ON t.receiver_id = receiver.id AND receiver.deleted_at IS NULL
+WHERE t.sender_id = $1
+    AND t.transaction_type_id = 0
+`
+
+type GetSentTransactionsRow struct {
+	FromUser string    `db:"from_user"`
+	ToUser   string    `db:"to_user"`
+	Amount   int32     `db:"amount"`
+	Date     time.Time `db:"date"`
+}
+
+// only coin transfers
+func (q *Queries) GetSentTransactions(ctx context.Context, senderID string) ([]GetSentTransactionsRow, error) {
+	rows, err := q.db.Query(ctx, getSentTransactions, senderID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetSentTransactionsRow{}
+	for rows.Next() {
+		var i GetSentTransactionsRow
+		if err := rows.Scan(
+			&i.FromUser,
+			&i.ToUser,
+			&i.Amount,
+			&i.Date,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserBalanceByID = `-- name: GetUserBalanceByID :one
+SELECT id, balance as coins
+FROM users
+WHERE users.id = $1
+    AND deleted_at IS NULL
+`
+
+type GetUserBalanceByIDRow struct {
+	ID    string `db:"id"`
+	Coins int32  `db:"coins"`
+}
+
+func (q *Queries) GetUserBalanceByID(ctx context.Context, id string) (GetUserBalanceByIDRow, error) {
+	row := q.db.QueryRow(ctx, getUserBalanceByID, id)
+	var i GetUserBalanceByIDRow
+	err := row.Scan(&i.ID, &i.Coins)
+	return i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT id,
        username,
        password_hash,
@@ -48,7 +159,7 @@ WHERE username = $1
   AND deleted_at IS NULL
 `
 
-type GetUserByNameRow struct {
+type GetUserByUsernameRow struct {
 	ID           string    `db:"id"`
 	Username     string    `db:"username"`
 	PasswordHash string    `db:"password_hash"`
@@ -57,9 +168,9 @@ type GetUserByNameRow struct {
 	UpdatedAt    time.Time `db:"updated_at"`
 }
 
-func (q *Queries) GetUserByName(ctx context.Context, username string) (GetUserByNameRow, error) {
-	row := q.db.QueryRow(ctx, getUserByName, username)
-	var i GetUserByNameRow
+func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error) {
+	row := q.db.QueryRow(ctx, getUserByUsername, username)
+	var i GetUserByUsernameRow
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
@@ -71,192 +182,52 @@ func (q *Queries) GetUserByName(ctx context.Context, username string) (GetUserBy
 	return i, err
 }
 
-const getUserInfoByID = `-- name: GetUserInfoByID :one
-WITH user_balance AS (
-    SELECT id, balance as coins
-    FROM users
-    WHERE users.id = $1
-      AND deleted_at IS NULL
-),
-user_inventory AS (
-    SELECT m.name as type,
-         COUNT(*) as quantity
-    FROM purchases p
-        JOIN merch m ON p.merch_id = m.id AND m.deleted_at IS NULL
-    WHERE p.user_id = $1
-    GROUP BY m.name
-),
-received_transactions AS (
-    SELECT
-        sender.username as from_user,
-        t.amount,
-        t.created_at as date
-    FROM transactions t
-        JOIN users sender ON t.sender_id = sender.id AND sender.deleted_at IS NULL
-    WHERE t.receiver_id = $1
-    AND t.transaction_type_id = 0  -- only coin transfers
-),
-sent_transactions AS (
-    SELECT
-        receiver.username as to_user,
-        t.amount,
-        t.created_at as date
-    FROM transactions t
-        JOIN users receiver ON t.receiver_id = receiver.id AND receiver.deleted_at IS NULL
-    WHERE t.sender_id = $1
-    AND t.transaction_type_id = 0  -- only coin transfers
-)
-SELECT
-    ub.id,
-    ub.coins,
-    COALESCE(json_agg(
-        json_build_object(
-            'type', ui.type,
-            'quantity', ui.quantity
-        )
-    ) FILTER (WHERE ui.type IS NOT NULL), '[]')::jsonb as inventory,
-    json_build_object(
-        'received', COALESCE(
-            json_agg(
-                json_build_object(
-                    'fromUser', rt.from_user,
-                    'amount', rt.amount,
-                    'date', rt.date
-                )
-            ) FILTER (WHERE rt.from_user IS NOT NULL),
-            '[]'
-        ),
-        'sent', COALESCE(
-            json_agg(
-                json_build_object(
-                    'toUser', st.to_user,
-                    'amount', st.amount,
-                    'date', st.date
-                )
-            ) FILTER (WHERE st.to_user IS NOT NULL),
-            '[]'
-        )
-    )::jsonb as coin_history
-FROM user_balance ub
-LEFT JOIN user_inventory ui ON true
-LEFT JOIN received_transactions rt ON true
-LEFT JOIN sent_transactions st ON true
-GROUP BY ub.id, ub.coins
+const getUserIDByUsername = `-- name: GetUserIDByUsername :one
+
+SELECT id
+FROM users
+WHERE username = $1
+    AND deleted_at IS NULL
 `
 
-type GetUserInfoByIDRow struct {
-	ID          string `db:"id"`
-	Coins       int32  `db:"coins"`
-	Inventory   []byte `db:"inventory"`
-	CoinHistory []byte `db:"coin_history"`
+// only coin transfers
+func (q *Queries) GetUserIDByUsername(ctx context.Context, username string) (string, error) {
+	row := q.db.QueryRow(ctx, getUserIDByUsername, username)
+	var id string
+	err := row.Scan(&id)
+	return id, err
 }
 
-func (q *Queries) GetUserInfoByID(ctx context.Context, id string) (GetUserInfoByIDRow, error) {
-	row := q.db.QueryRow(ctx, getUserInfoByID, id)
-	var i GetUserInfoByIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.Coins,
-		&i.Inventory,
-		&i.CoinHistory,
-	)
-	return i, err
-}
-
-const getUserInfoByUsername = `-- name: GetUserInfoByUsername :one
-WITH user_data AS (
-    SELECT id
-    FROM users
-    WHERE users.username = $1
-      AND deleted_at IS NULL
-),
-user_balance AS (
-    SELECT id, balance as coins
-        FROM users
-    WHERE id = (SELECT id FROM user_data)
-        AND deleted_at IS NULL
-),
-user_inventory AS (
-    SELECT m.name as type,
-        COUNT(*) as quantity
-    FROM purchases p
-        JOIN merch m ON p.merch_id = m.id AND m.deleted_at IS NULL
-    WHERE p.user_id = (SELECT id FROM user_data)
-    GROUP BY m.name
-),
-received_transactions AS (
-    SELECT
-        sender.username as from_user,
-        t.amount,
-        t.created_at as date
-    FROM transactions t
-        JOIN users sender ON t.sender_id = sender.id AND sender.deleted_at IS NULL
-    WHERE t.receiver_id = (SELECT id FROM user_data)
-        AND t.transaction_type_id = 0  -- only coin transfers
-),
-sent_transactions AS (
-    SELECT
-        receiver.username as to_user,
-        t.amount,
-        t.created_at as date
-    FROM transactions t
-        JOIN users receiver ON t.receiver_id = receiver.id AND receiver.deleted_at IS NULL
-    WHERE t.sender_id = (SELECT id FROM user_data)
-        AND t.transaction_type_id = 0  -- only coin transfers
-)
-SELECT
-    ub.id,
-    ub.coins,
-    COALESCE(json_agg(
-             json_build_object(
-                     'type', ui.type,
-                     'quantity', ui.quantity
-             )
-                     ) FILTER (WHERE ui.type IS NOT NULL), '[]')::jsonb as inventory,
-    json_build_object(
-            'received', COALESCE(
-                    json_agg(
-                    json_build_object(
-                            'fromUser', rt.from_user,
-                            'amount', rt.amount,
-                            'date', rt.date
-                    )
-                            ) FILTER (WHERE rt.from_user IS NOT NULL),
-                    '[]'
-                        ),
-            'sent', COALESCE(
-                            json_agg(
-                            json_build_object(
-                                    'toUser', st.to_user,
-                                    'amount', st.amount,
-                                    'date', st.date
-                            )
-                                    ) FILTER (WHERE st.to_user IS NOT NULL),
-                            '[]'
-                    )
-    )::jsonb as coin_history
-FROM user_balance ub
-         LEFT JOIN user_inventory ui ON true
-         LEFT JOIN received_transactions rt ON true
-         LEFT JOIN sent_transactions st ON true
-GROUP BY ub.id, ub.coins
+const getUserInventory = `-- name: GetUserInventory :many
+SELECT m.name as type,
+       COUNT(*) as quantity
+FROM purchases p
+    JOIN merch m ON p.merch_id = m.id AND m.deleted_at IS NULL
+WHERE p.user_id = $1
+GROUP BY m.name
 `
 
-type GetUserInfoByUsernameRow struct {
-	ID          string `db:"id"`
-	Coins       int32  `db:"coins"`
-	Inventory   []byte `db:"inventory"`
-	CoinHistory []byte `db:"coin_history"`
+type GetUserInventoryRow struct {
+	Type     string `db:"type"`
+	Quantity int64  `db:"quantity"`
 }
 
-func (q *Queries) GetUserInfoByUsername(ctx context.Context, username string) (GetUserInfoByUsernameRow, error) {
-	row := q.db.QueryRow(ctx, getUserInfoByUsername, username)
-	var i GetUserInfoByUsernameRow
-	err := row.Scan(
-		&i.ID,
-		&i.Coins,
-		&i.Inventory,
-		&i.CoinHistory,
-	)
-	return i, err
+func (q *Queries) GetUserInventory(ctx context.Context, userID string) ([]GetUserInventoryRow, error) {
+	rows, err := q.db.Query(ctx, getUserInventory, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetUserInventoryRow{}
+	for rows.Next() {
+		var i GetUserInventoryRow
+		if err := rows.Scan(&i.Type, &i.Quantity); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
