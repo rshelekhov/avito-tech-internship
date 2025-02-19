@@ -1,0 +1,53 @@
+name: Build and test
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Install make
+        run: sudo apt-get install -y make
+
+      - name: Create config
+        run: |
+          if [ ! -f config/.env ]; then
+            cp config/.env.example config/.env
+          fi
+
+      - name: Start PostgreSQL
+        run: docker compose up -d postgres
+
+      - name: Wait for PostgreSQL
+        run: |
+          echo "Waiting for PostgreSQL to be ready..."
+          sleep 10
+          docker compose logs postgres
+
+      - name: Start application
+        run: |
+          docker compose up -d app
+          echo "Waiting for application to be ready..."
+          sleep 10
+          docker compose logs app
+
+      - name: Run tests
+        run: |
+          echo "Starting tests..."
+          docker compose run --rm test
+
+      - name: Cleanup
+        if: always()
+        run: docker compose down -v
